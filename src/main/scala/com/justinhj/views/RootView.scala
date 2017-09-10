@@ -2,7 +2,9 @@ package com.justinhj.views
 
 import io.udash._
 import com.justinhj.RootState
+import org.scalajs.dom
 import org.scalajs.dom.Element
+
 import scalatags.JsDom.tags2.main
 
 object RootViewPresenter extends DefaultViewPresenterFactory[RootState.type](() => new RootView)
@@ -13,8 +15,11 @@ class RootView extends View {
 
   private val child: Element = div().render
 
+  private def loadBootstrapStyles(): dom.Element =
+    link(rel := "stylesheet", href := "assets/bootstrap/css/bootstrap.min.css").render
+
   private val content = div(
-    
+    loadBootstrapStyles(),
     main(
       div(
         h1("hnfetchsjs"),
