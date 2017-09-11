@@ -21,10 +21,7 @@ class RootView extends View {
   private val content = div(
     loadBootstrapStyles(),
     main(
-      div(
-        h1("hnfetchsjs"),
-        child
-      )
+      child
     )
   )
 

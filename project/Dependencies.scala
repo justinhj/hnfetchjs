@@ -10,7 +10,8 @@ object Dependencies {
     "io.udash" %%% "udash-core-frontend" % udashVersion,
     "io.udash" %%% "udash-jquery" % udashJQueryVersion,
     "io.udash" %%% "udash-bootstrap" % udashVersion,
-    "com.47deg" %%% "fetch" % "0.6.3"
+    "com.47deg" %%% "fetch" % "0.6.3",
+    "com.lihaoyi" %%% "upickle" % "0.4.4"
   ))
 
   val depsJS = Def.setting(Seq[org.scalajs.sbtplugin.JSModuleID](
