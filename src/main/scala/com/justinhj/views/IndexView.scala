@@ -3,18 +3,19 @@ package com.justinhj.views
 import io.udash._
 import com.justinhj._
 import com.justinhj.hnfetch.HNFetch
+import com.justinhj.hnfetch.HNFetch.HNItemIDList
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import org.scalajs.dom.Element
 import io.udash.bootstrap.form._
 import org.scalajs.dom.ext.Ajax
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 trait HNPageModel {
   def startPage: String
   def storiesPerPage: String
-  def output: String
+  def topItemIDs: HNItemIDList
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -30,16 +31,33 @@ case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
 }
 
 class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[IndexState.type] {
-  
-  def fetchPageOfStories(): Unit = {
 
+  // Called on initialization and ??? to get the latest top stories
+  def fetchTopItems() : Unit = {
+
+    // Todo this should fetch a page of stories instead
     HNFetch.getTopItems().map {
       res => res match {
 
-        case Right(good) => println(good)
-        case Left(bad) => println(s"Error: $bad")
+        case Right(good) =>
+          model.subProp(_.topItemIDs).set(good)
+          //println(good)
+        case Left(bad) =>
+          // TODO display error dialog
+          println(s"Error: $bad")
       }
     }
+
+  }
+
+  def fetchPageOfStories(): Unit = {
+
+    // Todo this should fetch a page of stories instead
+
+    val start = Try(model.subProp(_.startPage).get.toInt).getOrElse(0)
+    val perPage = Try(model.subProp(_.storiesPerPage).get.toInt).getOrElse(10)
+
+    println(s"Trigger fetch of $perPage items starting at page $start")
 
   }
 
@@ -48,7 +66,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     model.subProp(_.startPage).set("0")
     model.subProp(_.storiesPerPage).set("20")
-    model.subProp(_.output).set("")
+    //model.subProp(_.topItemIDs).set("")
+
+    fetchTopItems()
   }
 }
 
