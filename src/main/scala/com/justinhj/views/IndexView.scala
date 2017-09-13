@@ -13,8 +13,8 @@ import scala.util.{Failure, Success, Try}
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 trait HNPageModel {
-  def startPage: String
-  def storiesPerPage: String
+  def startPage: Int
+  def storiesPerPage: Int
   def topItemIDs: HNItemIDList
 }
 
@@ -64,8 +64,8 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
   // Called before view starts rendering.
   override def handleState(state: IndexState.type): Unit = {
 
-    model.subProp(_.startPage).set("0")
-    model.subProp(_.storiesPerPage).set("20")
+    model.subProp(_.startPage).set(0)
+    model.subProp(_.storiesPerPage).set(20)
     //model.subProp(_.topItemIDs).set("")
 
     fetchTopItems()
@@ -89,8 +89,8 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     h3("Hacker News API with Fetch"),
     div(cls := "col-md-6",
       UdashForm(
-        UdashForm.numberInput()("Start Page")(model.subProp(_.startPage)),
-        UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage)),
+        UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
+        UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
         submitButton.render
       ).render
       //,
