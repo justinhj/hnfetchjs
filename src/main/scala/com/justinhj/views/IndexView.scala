@@ -1,28 +1,22 @@
 package com.justinhj.views
 
 import java.net.URI
-import java.util.Date
 
-import io.udash._
-import com.justinhj._
-import com.justinhj.hnfetch.{HNDataSources, HNFetch}
-import com.justinhj.hnfetch.HNFetch.{HNItem, HNItemID, HNItemIDList}
-import fetch.{DataSourceCache, FetchEnv}
-import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
-import org.scalajs.dom.Element
-import io.udash.bootstrap.form._
-import org.scalajs.dom.ext.Ajax
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scalatags.JsDom.all.li
-import cats.instances.list._
-import fetch._
-import fetch.implicits._
 import cats.instances.list._
 import cats.syntax.traverse._
+import com.justinhj._
+import com.justinhj.hnfetch.HNFetch.{HNItem, HNItemID, HNItemIDList}
+import com.justinhj.hnfetch.{HNDataSources, HNFetch}
+import fetch.implicits._
 import fetch.syntax._
+import fetch.{DataSourceCache, FetchEnv, _}
+import io.udash._
+import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
+import io.udash.bootstrap.form._
+
+import scala.concurrent.Future
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.util.{Failure, Success, Try}
 
 trait HNPageModel {
   def startPage: Int
@@ -115,7 +109,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
 
 class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) extends FinalView {
-  import com.justinhj.Context._
   import scalatags.JsDom.all._
 
   // Let's display the time like "2 minutes ago" using the PrettyTime library
