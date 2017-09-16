@@ -65,32 +65,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   }
 
-  // Let's display the time like "2 minutes ago" using the PrettyTime library
-  // ts is epoch time in seconds
-  def timestampToPretty(ts: Int) : String = {
-
-    val epochTimeMS = ts * 1000L
-
-    "Some time ago"
-
-//    val p = new PrettyTime()
-//    p.format(new Date(epochTimeMS))
-  }
-
-  // We will display just the hostname of the URL
-  // this returns close to what we want but not exactly...
-  def getHostName(url: String) : String = {
-    if(url.isEmpty) ""
-    else {
-      Try(new URI(url)) match {
-        case Success(u) =>
-          "(" + u.getHost + ")"
-        case Failure(e) =>
-          ""
-      }
-    }
-  }
-
   def fetchPageOfStories(): Unit = {
 
     val startPage = Try(model.subProp(_.startPage).get.toInt).getOrElse(0)
@@ -144,6 +118,32 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   import com.justinhj.Context._
   import scalatags.JsDom.all._
 
+  // Let's display the time like "2 minutes ago" using the PrettyTime library
+  // ts is epoch time in seconds
+  def timestampToPretty(ts: Int) : String = {
+
+    val epochTimeMS = ts * 1000L
+
+    "Some time ago"
+
+    //    val p = new PrettyTime()
+    //    p.format(new Date(epochTimeMS))
+  }
+
+  // We will display just the hostname of the URL
+  // this returns close to what we want but not exactly...
+  def getHostName(url: String) : String = {
+    if(url.isEmpty) ""
+    else {
+      Try(new URI(url)) match {
+        case Success(u) =>
+          "(" + u.getHost + ")"
+        case Failure(e) =>
+          ""
+      }
+    }
+  }
+
   val submitButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Load")
 
   submitButton.listen {
@@ -154,19 +154,25 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   private val content = div(
     h3("Hacker News API with Fetch"),
-    div(cls := "col-md-6",
+    div(cls := "col-md-3",
       UdashForm(
         UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
         UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
         submitButton.render
       ).render,
-      div(cls := "col-md-6",
-        ul(id := "results",
-          li("Hello"),
-          li("Cruel"),
-          li("World")
+      div(cls := "col-md-10",
+        ul(
+          produce(model.subProp(_.currentItems)) {
+            items => items.map {
+              case item =>
+                val line1 = s"xx. ${item.title} ${getHostName(item.url)}"
+                val line2 = s"  ${item.score} points by ${item.by} at ${timestampToPretty(item.time)} ${item.descendants} comments\n"
+
+                li(line1, br, line2).render
+            }
+          }
         )
-        )
+      )
     )
   )
 
