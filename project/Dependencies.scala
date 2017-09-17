@@ -10,9 +10,12 @@ object Dependencies {
     "io.udash" %%% "udash-core-frontend" % udashVersion,
     "io.udash" %%% "udash-jquery" % udashJQueryVersion,
     "io.udash" %%% "udash-bootstrap" % udashVersion,
+    "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
+    "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
     "com.47deg" %%% "fetch" % "0.6.3",
     "com.lihaoyi" %%% "upickle" % "0.4.4",
-    "org.typelevel" %%% "cats" % "0.9.0"
+    "org.typelevel" %%% "cats" % "0.9.0",
+    "ru.pavkin" %%% "scala-js-momentjs" % "0.9.0"
   ))
 
   val depsJS = Def.setting(Seq[org.scalajs.sbtplugin.JSModuleID](

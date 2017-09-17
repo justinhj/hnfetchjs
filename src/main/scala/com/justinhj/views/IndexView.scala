@@ -2,17 +2,20 @@ package com.justinhj.views
 
 import java.net.URI
 
+import com.justinhj.styles._
 import cats.instances.list._
 import cats.syntax.traverse._
 import com.justinhj._
 import com.justinhj.hnfetch.HNFetch.{HNItem, HNItemID, HNItemIDList}
 import com.justinhj.hnfetch.{HNDataSources, HNFetch}
+import io.udash.bootstrap.{BootstrapStyles => BSS}
 import fetch.implicits._
 import fetch.syntax._
 import fetch.{DataSourceCache, FetchEnv, _}
 import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
+import moment._
 
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -46,22 +49,18 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     // Todo this should fetch a page of stories instead
     HNFetch.getTopItems().map {
-      res => res match {
-
-        case Right(good) =>
-          model.subProp(_.topItemIDs).set(good)
-          //println(good)
-        case Left(bad) =>
-          // TODO display error dialog
-          println(s"Error: $bad")
-      }
+      case Right(good) =>
+        model.subProp(_.topItemIDs).set(good)
+      case Left(bad) =>
+        // TODO display error dialog
+        println(s"Error: $bad")
     }
 
   }
 
   def fetchPageOfStories(): Unit = {
 
-    val startPage = Try(model.subProp(_.startPage).get.toInt).getOrElse(0)
+    val startPage = Try(model.subProp(_.startPage).get).getOrElse(0)
     val numItemsPerPage = Try(model.subProp(_.storiesPerPage).get).getOrElse(10)
     val hnItemIDlist = Try(model.subProp(_.topItemIDs).get).getOrElse(List.empty[HNItemID])
 
@@ -86,13 +85,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
         // update the model
         model.subProp(_.currentItems).set(items)
-
-//        items.zipWithIndex.foreach {
-//          case (item, n) =>
-//            println(s"${itemNum(n)}. ${item.title} ${getHostName(item.url)}")
-//            println(s"  ${item.score} points by ${item.by} at ${timestampToPretty(item.time)} ${item.descendants} comments\n")
-//        }
-
     }
   }
 
@@ -117,10 +109,8 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
     val epochTimeMS = ts * 1000L
 
-    "Some time ago"
+    Moment(epochTimeMS).fromNow()
 
-    //    val p = new PrettyTime()
-    //    p.format(new Date(epochTimeMS))
   }
 
   // We will display just the hostname of the URL
@@ -129,15 +119,15 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     if(url.isEmpty) ""
     else {
       Try(new URI(url)) match {
-        case Success(u) =>
-          "(" + u.getHost + ")"
-        case Failure(e) =>
-          ""
+        case Success(uri) =>
+          "(" + uri.getHost + ")"
+        case Failure(_) =>
+          "[parse error]"
       }
     }
   }
 
-  val submitButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Load")
+  private val submitButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Load")
 
   submitButton.listen {
     case _ =>
@@ -145,29 +135,35 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   }
 
-  private val content = div(
-    h3("Hacker News API with Fetch"),
-    div(cls := "col-md-3",
-      UdashForm(
-        UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
-        UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
-        submitButton.render
-      ).render,
-      div(cls := "col-md-10",
-        ul(
-          produce(model.subProp(_.currentItems)) {
-            items => items.map {
-              case item =>
-                val line1 = s"xx. ${item.title} ${getHostName(item.url)}"
-                val line2 = s"  ${item.score} points by ${item.by} at ${timestampToPretty(item.time)} ${item.descendants} comments\n"
+  import scalacss.DevDefaults._
+  import scalacss.ScalatagsCss._
+  import scalatags.JsDom._
+  import scalatags.JsDom.all._
 
-                li(line1, br, line2).render
+  private val content = div(
+    div(BSS.container,
+      h3("Hacker News Fetch"),
+      div(BSS.row,
+        UdashForm(
+          UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
+          UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
+          submitButton.render
+        ).render),
+      div(BSS.row,
+          ul(
+            produce(model.subProp(_.currentItems)) {
+              items => items.map {
+                item =>
+                val line1 = s"xx. ${item.title} ${getHostName(item.url)}"
+                val line2 = s"  ${item.score} points by ${item.by} ${timestampToPretty(item.time)} ${item.descendants} comments\n"
+
+                li(GlobalStyles.listBackground, line1, br, line2).render
+              }
             }
-          }
-        )
+          )
+        ).render
       )
     )
-  )
 
   override def getTemplate: Modifier = content
 

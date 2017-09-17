@@ -18,11 +18,15 @@ class RootView extends View {
   private def loadBootstrapStyles(): dom.Element =
     link(rel := "stylesheet", href := "assets/bootstrap/css/bootstrap.min.css").render
 
+  private def loadExternalJS(): dom.Element =
+    script(src := "assets/js/moment.js").render
+
   private val content = div(
     loadBootstrapStyles(),
     main(
       child
-    )
+    ),
+    loadExternalJS()
   )
 
   override def getTemplate: Modifier = content

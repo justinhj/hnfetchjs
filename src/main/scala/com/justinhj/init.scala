@@ -26,7 +26,18 @@ object Init extends JSApp with StrictLogging {
         logger.error("Application root element not found! Check your index.html file!")
       } else {
         applicationInstance.run(appRoot.get)
+
+        import scalacss.DevDefaults._
+        import scalacss.ScalatagsCss._
+        import scalatags.JsDom._
+        import com.justinhj.styles.GlobalStyles
+        jQ(GlobalStyles.render[TypedTag[org.scalajs.dom.raw.HTMLStyleElement]].render).insertBefore(appRoot.get)
+        
       }
     })
   }
+
+
+
+
 }

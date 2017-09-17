@@ -31,6 +31,7 @@ val hnfetchsjs = project.in(file(".")).enablePlugins(ScalaJSPlugin)
       IO.copyDirectory(sourceDirectory.value / "main/assets/fonts", crossTarget.value / StaticFilesDir / WebContent / "assets/fonts")
       IO.copyDirectory(sourceDirectory.value / "main/assets/images", crossTarget.value / StaticFilesDir / WebContent / "assets/images")
       IO.copyDirectory(sourceDirectory.value / "main/assets/bootstrap", crossTarget.value / StaticFilesDir / WebContent / "assets/bootstrap")
+      IO.copyDirectory(sourceDirectory.value / "main/assets/js", crossTarget.value / StaticFilesDir / WebContent / "assets/js")
       val statics = compileStaticsForRelease.value
       (crossTarget.value / StaticFilesDir).***.get
     },
