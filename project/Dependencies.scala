@@ -15,7 +15,9 @@ object Dependencies {
     "com.47deg" %%% "fetch" % "0.6.3",
     "com.lihaoyi" %%% "upickle" % "0.4.4",
     "org.typelevel" %%% "cats" % "0.9.0",
-    "ru.pavkin" %%% "scala-js-momentjs" % "0.9.0"
+    "ru.pavkin" %%% "scala-js-momentjs" % "0.9.0",
+    "org.stanch" %%% "reftree" % "1.1.3"
+
   ))
 
   val depsJS = Def.setting(Seq[org.scalajs.sbtplugin.JSModuleID](

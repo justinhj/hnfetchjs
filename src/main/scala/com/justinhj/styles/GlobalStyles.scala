@@ -10,10 +10,15 @@ object GlobalStyles extends StyleSheet.Inline {
 
   object Colors {
     val hnGreyB = c"#f6f6ef"
+    val hnOrangeB = c"#ff6600"
   }
 
+  val titleBar = style(
+    backgroundColor(Colors.hnOrangeB),
+    marginTop(10 px)
+  )
 
-  val listBackground = style(
+  val itemList = style(
     backgroundColor(Colors.hnGreyB),
     marginTop(20 px)
   )

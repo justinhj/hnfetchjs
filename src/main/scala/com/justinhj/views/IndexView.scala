@@ -141,7 +141,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   import scalatags.JsDom.all._
 
   private val content = div(
-    div(BSS.container,
+    div(GlobalStyles.titleBar, BSS.container,
       h3("Hacker News Fetch"),
       div(BSS.row,
         UdashForm(
@@ -150,14 +150,14 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
           submitButton.render
         ).render),
       div(BSS.row,
-          ul(
+          ul(GlobalStyles.itemList,
             produce(model.subProp(_.currentItems)) {
               items => items.map {
                 item =>
                 val line1 = s"xx. ${item.title} ${getHostName(item.url)}"
                 val line2 = s"  ${item.score} points by ${item.by} ${timestampToPretty(item.time)} ${item.descendants} comments\n"
 
-                li(GlobalStyles.listBackground, line1, br, line2).render
+                li(line1, br, line2).render
               }
             }
           )

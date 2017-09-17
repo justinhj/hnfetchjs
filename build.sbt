@@ -23,6 +23,7 @@ scalacOptions in ThisBuild ++= Seq(
 val hnfetchsjs = project.in(file(".")).enablePlugins(ScalaJSPlugin)
   .settings(
     libraryDependencies ++= deps.value,
+    resolvers += Resolver.bintrayRepo("stanch", "maven"),
     jsDependencies ++= depsJS.value,
     scalaJSUseMainModuleInitializer in Compile := true,
 

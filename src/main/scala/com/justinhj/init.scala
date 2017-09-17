@@ -32,7 +32,7 @@ object Init extends JSApp with StrictLogging {
         import scalatags.JsDom._
         import com.justinhj.styles.GlobalStyles
         jQ(GlobalStyles.render[TypedTag[org.scalajs.dom.raw.HTMLStyleElement]].render).insertBefore(appRoot.get)
-        
+
       }
     })
   }
