@@ -148,8 +148,10 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   import scalatags.JsDom.all._
 
   private val content = div(
-    div(GlobalStyles.titleBar, BSS.container,
-      h3("Hacker News Fetch"),
+    div(BSS.container,
+      div(GlobalStyles.titleBar, BSS.row,
+        h3("Hacker News Fetch")
+      ),
       div(BSS.row,
         UdashForm(
           UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
