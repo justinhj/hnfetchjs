@@ -185,7 +185,8 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
                   br,
                   div(GlobalStyles.smallGrey,
                     lowerLine1,
-                    a(href := s"https://news.ycombinator.com/user?id=${item.by}",
+                    a(GlobalStyles.smallGrey,
+                      href := s"https://news.ycombinator.com/user?id=${item.by}",
                       item.by
                     ),
                     lowerLine2)
