@@ -25,7 +25,7 @@ trait HNPageModel {
   def startPage: Int
   def storiesPerPage: Int
   def topItemIDs: HNItemIDList
-  def currentItems : List[HNItem]
+  def currentItems : List[(Int, HNItem)]
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -83,8 +83,15 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         cache = Some(env.cache)
         // env.rounds (may need me later)
 
+        // save the items as a tuple of item number and item
+
+        val itemList = items.zipWithIndex.map {
+          case (item, index) =>
+            (index + 1 + startPage * numItemsPerPage, item)
+        }
+
         // update the model
-        model.subProp(_.currentItems).set(items)
+        model.subProp(_.currentItems).set(itemList)
     }
   }
 
@@ -153,11 +160,36 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
           ul(GlobalStyles.itemList,
             produce(model.subProp(_.currentItems)) {
               items => items.map {
-                item =>
-                val line1 = s"xx. ${item.title} ${getHostName(item.url)}"
-                val line2 = s"  ${item.score} points by ${item.by} ${timestampToPretty(item.time)} ${item.descendants} comments\n"
+                case (index, item) =>
 
-                li(line1, br, line2).render
+                val hostName = s"${getHostName(item.url)}"
+
+                val lowerLine1 = s"${item.score} points by"
+                val lowerLine2 = s"${timestampToPretty(item.time)} ${item.descendants} comments"
+
+                li(GlobalStyles.itemListItem,
+                  span(
+                    GlobalStyles.bigGrey,
+                    s"$index."
+                  ),
+                  a(
+                    GlobalStyles.bigBlack,
+                    href := item.url,
+                    item.title
+                  ),
+                  a(
+                    GlobalStyles.smallGrey,
+                    href := s"https://news.ycombinator.com/from?site=$hostName",
+                    hostName
+                  ),
+                  br,
+                  div(GlobalStyles.smallGrey,
+                    lowerLine1,
+                    a(href := s"https://news.ycombinator.com/user?id=${item.by}",
+                      item.by
+                    ),
+                    lowerLine2)
+                ).render
               }
             }
           )
