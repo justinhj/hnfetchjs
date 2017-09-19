@@ -14,6 +14,12 @@ object GlobalStyles extends StyleSheet.Inline {
     val hnOrange = c"#ff6600"
   }
 
+  // TODO
+  // font-family: Verdana, Geneva, sans-serif;
+  // font-size: 1.2em;
+  // lets' make big normal and small about 0.8
+
+
   val bigScale = 1.1
 
   import Colors._
