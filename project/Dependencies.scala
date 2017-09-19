@@ -10,6 +10,7 @@ object Dependencies {
     "io.udash" %%% "udash-core-frontend" % udashVersion,
     "io.udash" %%% "udash-jquery" % udashJQueryVersion,
     "io.udash" %%% "udash-bootstrap" % udashVersion,
+    "io.udash" %%% "udash-jquery" % udashVersion,
     "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
     "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
     "com.47deg" %%% "fetch" % "0.6.3",

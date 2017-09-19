@@ -16,10 +16,16 @@ import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
 import moment._
+import reftree.render.{Renderer, RenderingOptions}
+import reftree.diagram.Diagram
+import java.nio.file.Paths
 
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
+import scalatags.JsDom.all.div
+import io.udash.wrappers.jquery._
+import scalatags.JsDom.all._
 
 trait HNPageModel {
   def startPage: Int
@@ -142,6 +148,16 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   }
 
+  val renderer = Renderer(
+    renderingOptions = RenderingOptions(density = 75)
+    //directory = Paths.get(ImagePath, "overview")
+  )
+  import renderer._
+
+  case class Person(firstName: String, age: Int)
+
+  val x = Diagram.sourceCodeCaption(Person("Bob", 42)).render(jQ("#reftree"))
+
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
   import scalatags.JsDom.all._
@@ -156,7 +172,9 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
             UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
             submitButton.render
-          ).render)),
+          ).render),
+        div(BSS.Grid.colMd8,
+          div(id := "reftree", "hello").render)),
       div(BSS.row,
           ul(GlobalStyles.itemList,
             produce(model.subProp(_.currentItems)) {
