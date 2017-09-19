@@ -173,23 +173,28 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
                     GlobalStyles.bigGrey,
                     s"$index."
                   ),
+                  a(" "),
                   a(
                     GlobalStyles.bigBlack,
                     href := item.url,
                     item.title
                   ),
+                  a(" "),
                   a(
                     GlobalStyles.smallGrey,
                     href := s"https://news.ycombinator.com/from?site=$hostName",
                     hostName
                   ),
+                  a(" "),
                   br,
                   div(GlobalStyles.smallGrey,
                     lowerLine1,
+                    a(" "),
                     a(GlobalStyles.smallGrey,
                       href := s"https://news.ycombinator.com/user?id=${item.by}",
                       item.by
                     ),
+                    a(" "),
                     lowerLine2)
                 ).render
               }
