@@ -20,7 +20,7 @@ object GlobalStyles extends StyleSheet.Inline {
 
   val titleBar = style(
     backgroundColor(hnOrange),
-    marginTop(10 px)
+    marginBottom(20 px)
   )
 
   val bigGrey = style(

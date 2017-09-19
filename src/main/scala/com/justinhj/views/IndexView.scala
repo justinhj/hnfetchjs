@@ -87,7 +87,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
         val itemList = items.zipWithIndex.map {
           case (item, index) =>
-            (index + 1 + startPage * numItemsPerPage, item)
+            (itemNum(index), item)
         }
 
         // update the model
@@ -142,7 +142,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   }
 
-  import scalacss.DevDefaults._
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
   import scalatags.JsDom.all._
@@ -150,14 +149,14 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
-        h3("Hacker News Fetch")
-      ),
+        span(GlobalStyles.bigBlack, "Hacker News API Fetch JS Demo")),
       div(BSS.row,
-        UdashForm(
-          UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
-          UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
-          submitButton.render
-        ).render),
+        div(BSS.Grid.colMd4,
+          UdashForm(
+            UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
+            UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
+            submitButton.render
+          ).render)),
       div(BSS.row,
           ul(GlobalStyles.itemList,
             produce(model.subProp(_.currentItems)) {
