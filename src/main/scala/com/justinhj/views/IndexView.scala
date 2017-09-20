@@ -175,6 +175,13 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     )).rename("Peep") // change the name displayed for the class
   }
 
+  implicit def roundToRefTree: ToRefTree[Round] = ToRefTree[Round] {
+    round =>
+      RefTree.Ref(round, Seq(
+        RefTree.Val((round.end - round.start) / 1000000).toField.withName("ms")))
+  }
+
+
   val renderer = Renderer(
     renderingOptions = RenderingOptions(density = 75)
   )
@@ -182,9 +189,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   val demoData = List(Person("Jamie", 12), Person("Lisa", 35), Person("Corbey", 45), Person("Sylvia", 49))
 
-  // model.subProp(_.fetchRounds).get
-
-  def renderDiagram() = Diagram.sourceCodeCaption(demoData).render(dom.document.getElementById("reftree"))
+  def renderDiagram() = Diagram.sourceCodeCaption(model.subProp(_.fetchRounds).get).render(dom.document.getElementById("reftree"))
 
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
@@ -211,9 +216,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
                 val hostName = s"${getHostName(item.url)}"
 
-                val lowerLine1 = s"${item.score} points by"
-                val lowerLine2 = s"${timestampToPretty(item.time)} ${item.descendants} comments"
-
                 li(GlobalStyles.itemListItem,
                   span(
                     GlobalStyles.bigGrey,
@@ -234,14 +236,19 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
                   a(" "),
                   br,
                   div(GlobalStyles.smallGrey,
-                    lowerLine1,
+                    s"${item.score} points by",
                     a(" "),
                     a(GlobalStyles.smallGrey,
                       href := s"https://news.ycombinator.com/user?id=${item.by}",
                       item.by
                     ),
                     a(" "),
-                    lowerLine2)
+                    s"${timestampToPretty(item.time)}",
+                    a(" "),
+                    a(GlobalStyles.smallGrey,
+                      href := s"https://news.ycombinator.com/item?id=${item.id}",
+                      s"${item.descendants} comments")
+                  )
                 ).render
               }
             }
