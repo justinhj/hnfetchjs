@@ -19,7 +19,7 @@ import moment._
 import reftree.render.{Renderer, RenderingOptions}
 import reftree.diagram.Diagram
 import java.nio.file.Paths
-
+import org.scalajs.dom
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
@@ -145,6 +145,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   submitButton.listen {
     case _ =>
       presenter.fetchPageOfStories()
+      renderDiagram
 
   }
 
@@ -156,7 +157,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   case class Person(firstName: String, age: Int)
 
-  val x = Diagram.sourceCodeCaption(Person("Bob", 42)).render(jQ("#reftree"))
+  def renderDiagram() = Diagram.sourceCodeCaption(Person("Bob", 42)).render(dom.document.getElementById("reftree"))
 
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
