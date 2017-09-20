@@ -18,13 +18,18 @@ import io.udash.bootstrap.form._
 import moment._
 import reftree.render.{Renderer, RenderingOptions}
 import reftree.diagram.Diagram
+import reftree.contrib.SimplifiedInstances
 import java.nio.file.Paths
+
 import org.scalajs.dom
+
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
 import scalatags.JsDom.all.div
 import io.udash.wrappers.jquery._
+
+import scala.collection.immutable.Seq
 import scalatags.JsDom.all._
 
 trait HNPageModel {
@@ -32,6 +37,7 @@ trait HNPageModel {
   def storiesPerPage: Int
   def topItemIDs: HNItemIDList
   def currentItems : List[(Int, HNItem)]
+  def fetchRounds : List[Round]
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -96,8 +102,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
             (itemNum(index), item)
         }
 
-        // update the model
+        // update the model with the list items and fetch rounds
         model.subProp(_.currentItems).set(itemList)
+        model.subProp(_.fetchRounds).set(env.rounds.toList)
     }
   }
 
@@ -106,8 +113,13 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     model.subProp(_.startPage).set(0)
     model.subProp(_.storiesPerPage).set(20)
-    //model.subProp(_.topItemIDs).set("")
 
+//    model.subProp(_.fetchRounds).listen(r =>
+//      ???
+//
+//    )
+
+      // TODO this should be called periodically and store in the model
     fetchTopItems()
   }
 }
@@ -146,18 +158,33 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     case _ =>
       presenter.fetchPageOfStories()
       renderDiagram
+  }
 
+  import reftree.core._
+
+  case class Person(firstName: String, age: Int)
+
+  implicit def treeInstance: ToRefTree[Person] = ToRefTree[Person] { person =>
+    RefTree.Ref(person, Seq(
+      // display the size as a hexadecimal number (why not?)
+      RefTree.Val(person.age).withHint(RefTree.Val.Hex).toField.withName("Aged"),
+      // highlight the value
+      person.firstName.refTree.withHighlight(true).toField.withName("Nom"),
+//      // do not label the children
+//      tree.children.refTree.toField
+    )).rename("Peep") // change the name displayed for the class
   }
 
   val renderer = Renderer(
     renderingOptions = RenderingOptions(density = 75)
-    //directory = Paths.get(ImagePath, "overview")
   )
   import renderer._
 
-  case class Person(firstName: String, age: Int)
+  val demoData = List(Person("Jamie", 12), Person("Lisa", 35), Person("Corbey", 45), Person("Sylvia", 49))
 
-  def renderDiagram() = Diagram.sourceCodeCaption(Person("Bob", 42)).render(dom.document.getElementById("reftree"))
+  // model.subProp(_.fetchRounds).get
+
+  def renderDiagram() = Diagram.sourceCodeCaption(demoData).render(dom.document.getElementById("reftree"))
 
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
