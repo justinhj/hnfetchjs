@@ -156,7 +156,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   case class Person(firstName: String, age: Int)
 
-  val x = Diagram.sourceCodeCaption(Person("Bob", 42)).render(jQ("#reftree"))
+  val x = Diagram.sourceCodeCaption(Person("Bob", 42)).render(jQ("#reftree").get(0).render)
 
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
