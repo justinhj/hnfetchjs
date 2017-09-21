@@ -1,9 +1,8 @@
 package com.justinhj.styles
 
 import scala.language.postfixOps
-import scalacss.internal.{Attr, Literal}
+import scalacss.internal.{Attr, Compose, FontFace, Literal}
 import scalacss.DevDefaults._
-import scalacss.internal.Compose
 
 object GlobalStyles extends StyleSheet.Inline {
   import dsl._
@@ -14,33 +13,41 @@ object GlobalStyles extends StyleSheet.Inline {
     val hnOrange = c"#ff6600"
   }
 
-  // TODO
-  // font-family: Verdana, Geneva, sans-serif;
-  // font-size: 1.2em;
-  // lets' make big normal and small about 0.8
+  object Font {
+    val fonts = "Verdana, Geneva, sans-serif;"
+  }
 
-
-  val bigScale = 1.1
+  val bigScale = 1.0
+  val smallScale = 0.8
 
   import Colors._
+  import Font._
 
   val titleBar = style(
     backgroundColor(hnOrange),
-    marginBottom(20 px)
+    marginBottom(20 px),
+    marginBottom(20 px),
+    paddingTop(5 px),
+    paddingBottom(5 px),
+    paddingLeft(5 px)
   )
 
   val bigGrey = style(
     fontSize(bigScale em),
-    color(hnGreyDark)
+    color(hnGreyDark),
+    fontFamily :=! fonts
   )
 
   val bigBlack = style(
     fontSize(bigScale em),
-    color.black
+    color.black,
+    fontFamily :=! fonts
   )
 
   val smallGrey = style(
-    color(hnGreyDark)
+    color(hnGreyDark),
+    fontFamily :=! fonts,
+    fontSize(smallScale em)
   )
 
   val itemList = style(
