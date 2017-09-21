@@ -93,7 +93,8 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
         // Update the cache
         cache = Some(env.cache)
-        // env.rounds (may need me later)
+
+        println(s"round 1 ${env.rounds(0)}")
 
         // save the items as a tuple of item number and item
 
@@ -113,11 +114,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     model.subProp(_.startPage).set(0)
     model.subProp(_.storiesPerPage).set(20)
-
-//    model.subProp(_.fetchRounds).listen(r =>
-//      ???
-//
-//    )
 
       // TODO this should be called periodically and store in the model
     fetchTopItems()
@@ -157,7 +153,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   submitButton.listen {
     case _ =>
       presenter.fetchPageOfStories()
-      renderDiagram
   }
 
   import reftree.core._
@@ -207,7 +202,12 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
             submitButton.render
           ).render),
         div(BSS.Grid.colMd8,
-          div(id := "reftree", "hello").render)),
+          produce(model.subProp(_.fetchRounds)) { r =>
+            // Redraw the fetch queue diagram
+            renderDiagram
+            div().render
+          },
+          div(id := "reftree"))),
       div(BSS.row,
           ul(GlobalStyles.itemList,
             produce(model.subProp(_.currentItems)) {
