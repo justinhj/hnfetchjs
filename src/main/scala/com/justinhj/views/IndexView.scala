@@ -70,6 +70,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   }
 
+
+
+
   def fetchPageOfStories(): Unit = {
 
     val startPage = Try(model.subProp(_.startPage).get).getOrElse(0)
@@ -105,14 +108,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
               case _ =>
 
             }
-
-//            c.map{
-//              case FetchMany[HNItemID, HNItem](many) =>
-//                print(s"${many}")
-//              case _ =>
-//            }
-
-
 
           case _ =>
         }
@@ -201,12 +196,50 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     }
   }
 
+  case class FetchInfo(count: Int, dsName: String)
+
+  // Figure out the DataSource type and number of items fetched
+  def getRoundCountAndDSName(round: Round) : List[FetchInfo] = {
+
+    val optionList = round.request match {
+
+      case Concurrent(queries) =>
+
+        queries.map  {
+
+          case FetchMany(items, dsType) =>
+            Some(FetchInfo(items.toList.size, dsType.toString))
+          case FetchOne(item, dsType) =>
+            Some(FetchInfo(1, dsType.toString))
+          case _ =>
+            None
+
+        }.toList
+
+      case _ => List(None)
+    }
+
+    optionList.flatten
+
+  }
+
+  implicit def fetchInfoToRefTree: ToRefTree[FetchInfo] = ToRefTree[FetchInfo] {
+    fetchInfo =>
+      RefTree.Ref(fetchInfo, Seq(
+        RefTree.Val(fetchInfo.count).toField.withName("count"),
+        fetchInfo.dsName.refTree.toField.withName("datasource")
+
+      ))
+
+  }
+
   implicit def roundToRefTree: ToRefTree[Round] = ToRefTree[Round] {
     round =>
+      val fetchInfos : List[FetchInfo] = getRoundCountAndDSName(round)
+
       RefTree.Ref(round, Seq(
-        RefTree.Val((round.end - round.start) / 1000000).toField.withName("ms")
-        //,
-        //RefTree.Val(round.getClass.toString).toField
+        RefTree.Val((round.end - round.start) / 1000000).toField.withName("ms"),
+        fetchInfos.refTree.toField.withName("Fetches")
       ))
 
   }
