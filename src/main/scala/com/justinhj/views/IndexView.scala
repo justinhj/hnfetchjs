@@ -97,23 +97,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         // Update the cache
         cache = Some(env.cache)
 
-        env.rounds(0).request match {
-
-          case Concurrent(queries) =>
-
-            queries.map {
-
-              case FetchMany(itemz, itemType) =>
-                println(s"got ${itemz.toList.size} items of type $itemType")
-              case _ =>
-
-            }
-
-          case _ =>
-        }
-
-        //println(s"round 1 ${env.rounds(0)}")
-
         // save the items as a tuple of item number and item
 
         val itemList = items.zipWithIndex.map {
@@ -257,17 +240,13 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       RefTree.Ref(q, q.map(_.refTree.toField)).rename("People queue")
   }
 
-//  implicit def fetchQueueRound : ToRefTree[Queue[Round]] = ToRefTree[Queue[Round]] {
-//    case q if q.isEmpty =>
-//      RefTree.Null()
-//    case q =>
-//      RefTree.Ref(q, q.map(_.refTree.toField)).rename("Fetch queue")
-//  }
+  // Redraw the fetch data structure diagram
+  private def renderDiagram(): Unit = {
 
-  val lastFetch = Queue(Person("Jamie", 12), Person("Lisa", 35), Person("Corbey", 45), Person("Sylvia", 49))
+    val lastFetch = model.subProp(_.fetchRounds).get
 
-  //def renderDiagram() = Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
-  def renderDiagram() = Diagram.sourceCodeCaption(model.subProp(_.fetchRounds).get).render(dom.document.getElementById("reftree"))
+    Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
+  }
 
   import scalacss.ScalatagsCss._
   import scalatags.JsDom._
