@@ -32,6 +32,13 @@ object GlobalStyles extends StyleSheet.Inline {
     paddingLeft(5 px)
   )
 
+  val titleBarText = style(
+    fontSize(bigScale em),
+    color.black,
+    fontWeight.bold,
+    fontFamily :=! fonts
+  )
+
   val bigGrey = style(
     fontSize(bigScale em),
     color(hnGreyDark),

@@ -16,9 +16,9 @@ import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
 import moment._
-import reftree.render.{Renderer, RenderingOptions}
-import reftree.diagram.Diagram
-import reftree.contrib.SimplifiedInstances
+import reftree.render._
+import reftree.diagram._
+import reftree.contrib.SimplifiedInstances._
 import java.nio.file.Paths
 
 import org.scalajs.dom
@@ -29,7 +29,7 @@ import scala.util.{Failure, Success, Try}
 import scalatags.JsDom.all.div
 import io.udash.wrappers.jquery._
 
-import scala.collection.immutable.Seq
+import scala.collection.immutable.{::, List, Nil, Queue, Seq}
 import scalatags.JsDom.all._
 
 trait HNPageModel {
@@ -70,6 +70,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   }
 
+
+
+
   def fetchPageOfStories(): Unit = {
 
     val startPage = Try(model.subProp(_.startPage).get).getOrElse(0)
@@ -94,7 +97,22 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         // Update the cache
         cache = Some(env.cache)
 
-        println(s"round 1 ${env.rounds(0)}")
+        env.rounds(0).request match {
+
+          case Concurrent(queries) =>
+
+            queries.map {
+
+              case FetchMany(itemz, itemType) =>
+                println(s"got ${itemz.toList.size} items of type $itemType")
+              case _ =>
+
+            }
+
+          case _ =>
+        }
+
+        //println(s"round 1 ${env.rounds(0)}")
 
         // save the items as a tuple of item number and item
 
@@ -170,10 +188,60 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     )).rename("Peep") // change the name displayed for the class
   }
 
+  implicit def `List RefTree`[A: ToRefTree]: ToRefTree[List[A]] = new ToRefTree[List[A]] {
+    def refTree(value: List[A]): RefTree = value match {
+      case head :: tail ⇒
+        RefTree.Ref(value, Seq(head.refTree.toField, refTree(tail).toField)).rename("Cons")
+      case Nil ⇒ RefTree.Ref(Nil, Seq.empty).rename("Nil")
+    }
+  }
+
+  case class FetchInfo(count: Int, dsName: String)
+
+  // Figure out the DataSource type and number of items fetched
+  def getRoundCountAndDSName(round: Round) : List[FetchInfo] = {
+
+    val optionList = round.request match {
+
+      case Concurrent(queries) =>
+
+        queries.map  {
+
+          case FetchMany(items, dsType) =>
+            Some(FetchInfo(items.toList.size, dsType.toString))
+          case FetchOne(item, dsType) =>
+            Some(FetchInfo(1, dsType.toString))
+          case _ =>
+            None
+
+        }.toList
+
+      case _ => List(None)
+    }
+
+    optionList.flatten
+
+  }
+
+  implicit def fetchInfoToRefTree: ToRefTree[FetchInfo] = ToRefTree[FetchInfo] {
+    fetchInfo =>
+      RefTree.Ref(fetchInfo, Seq(
+        RefTree.Val(fetchInfo.count).toField.withName("count"),
+        fetchInfo.dsName.refTree.toField.withName("datasource")
+
+      ))
+
+  }
+
   implicit def roundToRefTree: ToRefTree[Round] = ToRefTree[Round] {
     round =>
+      val fetchInfos : List[FetchInfo] = getRoundCountAndDSName(round)
+
       RefTree.Ref(round, Seq(
-        RefTree.Val((round.end - round.start) / 1000000).toField.withName("ms")))
+        RefTree.Val((round.end - round.start) / 1000000).toField.withName("ms"),
+        fetchInfos.refTree.toField.withName("Fetches")
+      ))
+
   }
 
 
@@ -182,8 +250,23 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   )
   import renderer._
 
-  val demoData = List(Person("Jamie", 12), Person("Lisa", 35), Person("Corbey", 45), Person("Sylvia", 49))
+  implicit def fetchQueue : ToRefTree[Queue[Person]] = ToRefTree[Queue[Person]] {
+    case q if q.isEmpty =>
+      RefTree.Null()
+    case q =>
+      RefTree.Ref(q, q.map(_.refTree.toField)).rename("People queue")
+  }
 
+//  implicit def fetchQueueRound : ToRefTree[Queue[Round]] = ToRefTree[Queue[Round]] {
+//    case q if q.isEmpty =>
+//      RefTree.Null()
+//    case q =>
+//      RefTree.Ref(q, q.map(_.refTree.toField)).rename("Fetch queue")
+//  }
+
+  val lastFetch = Queue(Person("Jamie", 12), Person("Lisa", 35), Person("Corbey", 45), Person("Sylvia", 49))
+
+  //def renderDiagram() = Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
   def renderDiagram() = Diagram.sourceCodeCaption(model.subProp(_.fetchRounds).get).render(dom.document.getElementById("reftree"))
 
   import scalacss.ScalatagsCss._
@@ -193,7 +276,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
-        span(GlobalStyles.bigBlack, "Hacker News API Fetch JS Demo")),
+        span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo")),
       div(BSS.row,
         div(BSS.Grid.colMd4,
           UdashForm(
