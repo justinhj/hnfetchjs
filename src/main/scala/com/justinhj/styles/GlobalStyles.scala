@@ -23,6 +23,14 @@ object GlobalStyles extends StyleSheet.Inline {
   import Colors._
   import Font._
 
+  val controlPanel = style {
+    backgroundColor(c"#ffcccc")
+  }
+
+  val reftreePanel = style {
+    backgroundColor(c"#ccffcc")
+  }
+
   val titleBar = style(
     backgroundColor(hnOrange),
     marginBottom(20 px),

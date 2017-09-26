@@ -156,6 +156,8 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       presenter.fetchPageOfStories()
   }
 
+  private val collapseButton = UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
+
   import reftree.core._
 
   case class Person(firstName: String, age: Int)
@@ -256,20 +258,20 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo")),
-      div(BSS.row,
-        div(BSS.Grid.colMd4,
-          UdashForm(
+      div(BSS.row, GlobalStyles.controlPanel,
+          UdashForm.inline(
             UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
-            submitButton.render
-          ).render),
-        div(BSS.Grid.colMd8,
+            submitButton.render,
+            collapseButton.render
+          ).render,
+        div(BSS.row, GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
             renderDiagram
             div().render
           },
-          div(id := "reftree"))),
+          div(id := "reftree", `class` := "collapse"))),
       div(BSS.row,
           ul(GlobalStyles.itemList,
             produce(model.subProp(_.currentItems)) {
