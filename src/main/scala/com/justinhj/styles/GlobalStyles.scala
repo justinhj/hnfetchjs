@@ -24,17 +24,16 @@ object GlobalStyles extends StyleSheet.Inline {
   import Font._
 
   val controlPanel = style {
-    backgroundColor(c"#ffcccc")
+    backgroundColor(hnGrey)
   }
 
   val reftreePanel = style {
-    backgroundColor(c"#ccffcc")
+    backgroundColor.white
   }
 
   val titleBar = style(
     backgroundColor(hnOrange),
-    marginBottom(20 px),
-    marginBottom(20 px),
+    //marginBottom(5 px),
     paddingTop(5 px),
     paddingBottom(5 px),
     paddingLeft(5 px)
@@ -66,8 +65,8 @@ object GlobalStyles extends StyleSheet.Inline {
   )
 
   val itemList = style(
-    backgroundColor(hnGrey),
-    marginTop(20 px)
+    backgroundColor(hnGrey)
+    //marginTop(5 px)
   )
 
   val itemListItem = style(

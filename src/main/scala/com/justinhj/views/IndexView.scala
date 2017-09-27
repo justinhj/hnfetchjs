@@ -19,18 +19,13 @@ import moment._
 import reftree.render._
 import reftree.diagram._
 import reftree.contrib.SimplifiedInstances._
-import java.nio.file.Paths
-
 import org.scalajs.dom
-
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
-import scalatags.JsDom.all.div
-import io.udash.wrappers.jquery._
+
 
 import scala.collection.immutable.{::, List, Nil, Queue, Seq}
-import scalatags.JsDom.all._
 
 trait HNPageModel {
   def startPage: Int
@@ -56,10 +51,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   var cache: Option[DataSourceCache] = None
 
-  // Called on initialization and ??? to get the latest top stories
+  // Get the latest top stories
   def fetchTopItems() : Unit = {
 
-    // Todo this should fetch a page of stories instead
     HNFetch.getTopItems().map {
       case Right(good) =>
         model.subProp(_.topItemIDs).set(good)
@@ -67,11 +61,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         // TODO display error dialog
         println(s"Error: $bad")
     }
-
   }
-
-
-
 
   def fetchPageOfStories(): Unit = {
 
@@ -85,7 +75,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     // Get the items
     val pageOfItems = hnItemIDlist.slice(startPage * numItemsPerPage, startPage * numItemsPerPage + numItemsPerPage)
 
-    val fetchItems = pageOfItems.traverse(HNDataSources.getItem)
+    val fetchItems: Fetch[List[HNItem]] = pageOfItems.traverse(HNDataSources.getItem)
 
     val fetchResult: Future[(FetchEnv, List[HNItem])] =
       if(cache.isDefined) fetchItems.runF[Future](cache.get)
@@ -125,7 +115,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) extends FinalView {
   import scalatags.JsDom.all._
 
-  // Let's display the time like "2 minutes ago" using the PrettyTime library
+  // Let's display the time like "2 minutes ago" using moment.js
   // ts is epoch time in seconds
   def timestampToPretty(ts: Int) : String = {
 
@@ -149,7 +139,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     }
   }
 
-  private val submitButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Load")
+  private val submitButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Fetch Stories")
 
   submitButton.listen {
     case _ =>
