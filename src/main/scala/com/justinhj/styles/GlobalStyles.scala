@@ -70,7 +70,7 @@ object GlobalStyles extends StyleSheet.Inline {
   )
 
   val itemListItem = style(
-    marginTop(8 px)
+      //marginTop(8 px)
   )
 
 

@@ -59,7 +59,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
       case Right(good) =>
         model.subProp(_.topItemIDs).set(good)
       case Left(bad) =>
-        // TODO display error dialog
+        // TODO Could display error dialog but this just logs to console
         println(s"Error: $bad")
     }
   }
@@ -140,7 +140,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     }
   }
 
-  private val submitButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Fetch Stories")
+  private val submitButton: UdashButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Fetch Stories")
 
   submitButton.listen {
     case _ =>
@@ -151,14 +151,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
 
   import reftree.core._
-
-  implicit def `List RefTree`[A: ToRefTree]: ToRefTree[List[A]] = new ToRefTree[List[A]] {
-    def refTree(value: List[A]): RefTree = value match {
-      case head :: tail ⇒
-        RefTree.Ref(value, Seq(head.refTree.toField, refTree(tail).toField)).rename("Cons")
-      case Nil ⇒ RefTree.Ref(Nil, Seq.empty).rename("Nil")
-    }
-  }
 
   case class FetchInfo(count: Int, dsName: String)
 
