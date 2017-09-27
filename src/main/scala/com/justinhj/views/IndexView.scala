@@ -23,8 +23,9 @@ import org.scalajs.dom
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
-
-
+import scalacss.ScalatagsCss._
+import scalatags.JsDom._
+import scalatags.JsDom.all._
 import scala.collection.immutable.{::, List, Nil, Queue, Seq}
 
 trait HNPageModel {
@@ -146,22 +147,10 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       presenter.fetchPageOfStories()
   }
 
-  private val collapseButton = UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
+  private val collapseButton =
+    UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
 
   import reftree.core._
-
-  case class Person(firstName: String, age: Int)
-
-  implicit def treeInstance: ToRefTree[Person] = ToRefTree[Person] { person =>
-    RefTree.Ref(person, Seq(
-      // display the size as a hexadecimal number (why not?)
-      RefTree.Val(person.age).withHint(RefTree.Val.Hex).toField.withName("Aged"),
-      // highlight the value
-      person.firstName.refTree.withHighlight(true).toField.withName("Nom"),
-//      // do not label the children
-//      tree.children.refTree.toField
-    )).rename("Peep") // change the name displayed for the class
-  }
 
   implicit def `List RefTree`[A: ToRefTree]: ToRefTree[List[A]] = new ToRefTree[List[A]] {
     def refTree(value: List[A]): RefTree = value match {
@@ -223,15 +212,9 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   val renderer = Renderer(
     renderingOptions = RenderingOptions(density = 75)
   )
+
   import renderer._
-
-  implicit def fetchQueue : ToRefTree[Queue[Person]] = ToRefTree[Queue[Person]] {
-    case q if q.isEmpty =>
-      RefTree.Null()
-    case q =>
-      RefTree.Ref(q, q.map(_.refTree.toField)).rename("People queue")
-  }
-
+  
   // Redraw the fetch data structure diagram
   private def renderDiagram(): Unit = {
 
@@ -239,10 +222,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
     Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
   }
-
-  import scalacss.ScalatagsCss._
-  import scalatags.JsDom._
-  import scalatags.JsDom.all._
 
   private val content = div(
     div(BSS.container,
