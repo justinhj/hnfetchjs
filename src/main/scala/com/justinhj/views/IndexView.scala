@@ -2,31 +2,30 @@ package com.justinhj.views
 
 import java.net.URI
 
-import com.justinhj.styles._
 import cats.instances.list._
 import cats.syntax.traverse._
 import com.justinhj._
 import com.justinhj.hnfetch.HNFetch.{HNItem, HNItemID, HNItemIDList}
 import com.justinhj.hnfetch.{HNDataSources, HNFetch}
-import io.udash.bootstrap.{BootstrapStyles => BSS}
+import com.justinhj.styles._
 import fetch.implicits._
 import fetch.syntax._
 import fetch.{DataSourceCache, FetchEnv, _}
 import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
+import io.udash.bootstrap.{BootstrapStyles => BSS}
 import moment._
-import reftree.render._
-import reftree.diagram._
-import reftree.contrib.SimplifiedInstances._
 import org.scalajs.dom
+import reftree.contrib.SimplifiedInstances._
+import reftree.diagram._
+import reftree.render._
+
+import scala.collection.immutable.{List, Seq}
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
 import scalacss.ScalatagsCss._
-import scalatags.JsDom._
-import scalatags.JsDom.all._
-import scala.collection.immutable.{::, List, Nil, Queue, Seq}
 
 trait HNPageModel {
   def startPage: Int
@@ -52,7 +51,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   var cache: Option[DataSourceCache] = None
 
-  // Get the latest top stories
+  // Get the latest top stories id's
   def fetchTopItems() : Unit = {
 
     HNFetch.getTopItems().map {
@@ -64,6 +63,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     }
   }
 
+  // fetch a page of stories based on current page number and stories per page
   def fetchPageOfStories(): Unit = {
 
     val startPage = Try(model.subProp(_.startPage).get).getOrElse(0)
@@ -223,6 +223,10 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
           UdashForm.inline(
             UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
+            UdashForm.numberInput()("Stories in cache")(model.subProp(_.fetchRounds).transform {
+              what: List[Round] =>
+                "Hello"
+            }),
             submitButton.render,
             collapseButton.render
           ).render,
