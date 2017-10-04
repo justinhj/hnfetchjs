@@ -36,7 +36,7 @@ trait HNPageModel {
   def topItemIDs: HNItemIDList
   def currentItems : List[(Int, HNItem)]
   def fetchRounds : List[Round]
-  def itemCache : Cache
+  def cacheSize : Int
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -71,7 +71,7 @@ object Cache {
 
 class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[IndexState.type] {
 
-  var cache: Option[DataSourceCache] = None
+  var cache : DataSourceCache = Cache.empty
 
   // Get the latest top stories id's
   def fetchTopItems() : Unit = {
@@ -100,13 +100,13 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     val fetchItems: Fetch[List[HNItem]] = pageOfItems.traverse(HNDataSources.getItem)
 
-    val fetchResult: Future[(FetchEnv, List[HNItem])] = fetchItems.runF[Future](model.subProp(_.itemCache).get)
+    val fetchResult: Future[(FetchEnv, List[HNItem])] = fetchItems.runF[Future](cache)
 
     fetchResult.foreach {
       case (env, items) =>
 
         // Update the cache
-        model.subProp(_.itemCache).set(env.cache)
+        cache = env.cache
 
         // save the items as a tuple of item number and item
 
@@ -118,6 +118,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         // update the model with the list items and fetch rounds
         model.subProp(_.currentItems).set(itemList)
         model.subProp(_.fetchRounds).set(env.rounds.toList)
+        model.subProp(_.cacheSize).set(cache.asInstanceOf[Cache].size)
     }
   }
 
@@ -126,6 +127,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     model.subProp(_.startPage).set(1)
     model.subProp(_.storiesPerPage).set(30)
+    model.subProp(_.cacheSize).set(0)
 
       // TODO this should be called periodically and store in the model
     fetchTopItems()
@@ -244,7 +246,9 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
-        span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo")),
+        span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
+        span(GlobalStyles.smallGrey, bind(model.subProp(_.cacheSize)))
+      ),
       div(BSS.row, GlobalStyles.controlPanel,
           UdashForm.inline(
             UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
