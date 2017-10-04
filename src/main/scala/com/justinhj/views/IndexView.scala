@@ -37,6 +37,7 @@ trait HNPageModel {
   def currentItems : List[(Int, HNItem)]
   def fetchRounds : List[Round]
   def cacheSize : Int
+  def storyCount: Int
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -79,6 +80,8 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     HNFetch.getTopItems().map {
       case Right(good) =>
         model.subProp(_.topItemIDs).set(good)
+        model.subProp(_.storyCount).set(good.size)
+
       case Left(bad) =>
         // TODO Could display error dialog but this just logs to console
         println(s"Error: $bad")
@@ -128,8 +131,12 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     model.subProp(_.startPage).set(1)
     model.subProp(_.storiesPerPage).set(30)
     model.subProp(_.cacheSize).set(0)
+    model.subProp(_.topItemIDs).set(List())
+    model.subProp(_.currentItems).set(List())
+    model.subProp(_.fetchRounds).set(List())
+    model.subProp(_.storyCount).set(0)
 
-      // TODO this should be called periodically and store in the model
+      // TODO this also should be called periodically and store in the model
     fetchTopItems()
   }
 }
@@ -243,26 +250,29 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 //      s"hello ${topItems.size} + ${storiesPerPage}"
 //  }
 
+//  private def topStoriesCount : ReadableProperty[String] =
+//    model.subProp(_.topItemIDs).transform((topStories: List[HNFetch.HNItemID]) => topStories.size.toString)
+
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
-        span(GlobalStyles.smallGrey, bind(model.subProp(_.cacheSize)))
+        span(GlobalStyles.smallGrey, "Cached items : ", bind(model.subProp(_.cacheSize)))
       ),
       div(BSS.row, GlobalStyles.controlPanel,
           UdashForm.inline(
             UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
-//            produce(model.subProp(_.storiesPerPage).combine(model.subProp(_.topItemIDs))) {
-//              whatAmI =>
-//                //val itemsPerPage = model.subProp(_.storiesPerPage).get
-//                //span(s" of ${ti.si / itemsPerPage} pages ").render
-//                div("heello")
-//            },
-  //
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
             submitButton.render,
             collapseButton.render
           ).render,
+        div(BSS.row,
+          "Stories in cache ",
+          b(bind(model.subProp(_.cacheSize))),
+          " number of top stories ",
+          b(bind(model.subProp(_.storyCount)))
+          )
+          .render,
         div(BSS.row, GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
