@@ -59,7 +59,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         model.subProp(_.storyCount).set(good.size)
 
       case Left(bad) =>
-        // TODO Could display error dialog but this just logs to console
+        // TODO Could display error dialog but for now this just logs to console
         println(s"Error: $bad")
     }
   }
@@ -116,7 +116,6 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     model.subProp(_.fetchRounds).set(List())
     model.subProp(_.storyCount).set(0)
 
-      // TODO this also should be called periodically and store in the model
     fetchTopItems()
   }
 }
