@@ -33,6 +33,8 @@ trait HNPageModel {
   def topItemIDs: HNItemIDList
   def currentItems : List[(Int, HNItem)]
   def fetchRounds : List[Round]
+  def cacheCount : Int
+  def storyCount: Int
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -57,6 +59,8 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     HNFetch.getTopItems().map {
       case Right(good) =>
         model.subProp(_.topItemIDs).set(good)
+        model.subProp(_.storyCount).set(good.size)
+
       case Left(bad) =>
         // TODO Could display error dialog but this just logs to console
         println(s"Error: $bad")
@@ -88,6 +92,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
         // Update the cache
         cache = Some(env.cache)
 
+        // We have a model property to monitor the number of items in the cache
+        model.subProp(_.cacheCount).set(env.cache.hashCode()) // TODO use the cache get size function
+
         // save the items as a tuple of item number and item
 
         val itemList = items.zipWithIndex.map {
@@ -106,8 +113,13 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
     model.subProp(_.startPage).set(0)
     model.subProp(_.storiesPerPage).set(20)
+    model.subProp(_.topItemIDs).set(List())
+    model.subProp(_.currentItems).set(List())
+    model.subProp(_.fetchRounds).set(List())
+    model.subProp(_.cacheCount).set(0)
+    model.subProp(_.storyCount).set(0)
 
-      // TODO this should be called periodically and store in the model
+      // TODO this also should be called periodically and store in the model
     fetchTopItems()
   }
 }
@@ -215,6 +227,9 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
   }
 
+//  private def topStoriesCount : ReadableProperty[String] =
+//    model.subProp(_.topItemIDs).transform((topStories: List[HNFetch.HNItemID]) => topStories.size.toString)
+
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
@@ -223,13 +238,16 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
           UdashForm.inline(
             UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
-            UdashForm.numberInput()("Stories in cache")(model.subProp(_.fetchRounds).transform {
-              what: List[Round] =>
-                "Hello"
-            }),
             submitButton.render,
             collapseButton.render
           ).render,
+        div(BSS.row,
+          "Stories in cache ",
+          b(bind(model.subProp(_.cacheCount))),
+          " number of top stories ",
+          b(bind(model.subProp(_.storyCount)))
+          )
+          .render,
         div(BSS.row, GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
