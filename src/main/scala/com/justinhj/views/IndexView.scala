@@ -13,12 +13,8 @@ import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
 import io.udash.bootstrap.{BootstrapStyles => BSS}
-import org.scalajs.dom
-import reftree.contrib.SimplifiedInstances._
-import reftree.diagram._
-import reftree.render._
 
-import scala.collection.immutable.{List, Seq}
+import scala.collection.immutable.List
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.Try

@@ -11,7 +11,7 @@ final case class Cache(cache : Map[DataSourceIdentity, Any]) extends DataSourceC
   override def update[A](k: DataSourceIdentity, v: A): Cache =
     Cache(cache.updated(k, v))
 
-  def size(): Int = cache.size
+  def size : Int = cache.size
 }
 
 object Cache {
