@@ -50,6 +50,13 @@ object GlobalStyles extends StyleSheet.Inline {
     fontFamily :=! fonts
   )
 
+  val titleBarTextSmall = style(
+    fontSize(smallScale em),
+    color.darkblue,
+    fontWeight.normal,
+    fontFamily :=! fonts
+  )
+
   val bigGrey = style(
     fontSize(bigScale em),
     color(hnGreyDark),

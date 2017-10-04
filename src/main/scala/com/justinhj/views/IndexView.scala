@@ -156,8 +156,9 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
-        span(GlobalStyles.smallGrey, "Cached items : ", bind(model.subProp(_.cacheSize)))
-      ),
+        span(GlobalStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
+        span(GlobalStyles.titleBarTextSmall, " number of top stories "),
+        span(GlobalStyles.titleBarTextSmall, (bind(model.subProp(_.storyCount))))),
       div(BSS.row, GlobalStyles.controlPanel,
           UdashForm.inline(
             UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
@@ -167,13 +168,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
             flushCacheButton.render,
             showFetchButton.render
           ).render,
-        div(BSS.row,
-          "Stories in cache ",
-          b(bind(model.subProp(_.cacheSize))),
-          " number of top stories ",
-          b(bind(model.subProp(_.storyCount)))
-          )
-          .render,
         div(BSS.row, GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
