@@ -50,8 +50,12 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   var cache : DataSourceCache = Cache.empty
 
+  def flushCache() : Unit = {
+    cache = Cache.empty
+  }
+
   // Get the latest top stories IDs
-  def fetchTopItems() : Unit = {
+  def getTopItemsIDs() : Unit = {
 
     HNFetch.getTopItems().map {
       case Right(good) =>
@@ -116,7 +120,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     model.subProp(_.fetchRounds).set(List())
     model.subProp(_.storyCount).set(0)
 
-    fetchTopItems()
+    getTopItemsIDs()
   }
 }
 
@@ -124,14 +128,28 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) extends FinalView {
   import scalatags.JsDom.all._
 
-  private val submitButton: UdashButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Fetch Stories")
+  private val fetchStoriesButton: UdashButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Fetch Page")
 
-  submitButton.listen {
+  fetchStoriesButton.listen {
     case _ =>
       presenter.fetchPageOfStories()
   }
 
-  private val collapseButton =
+  private val refreshTopStoriesButton: UdashButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Refresh Top Stories")
+
+  refreshTopStoriesButton.listen {
+    case _ =>
+      presenter.getTopItemsIDs()
+  }
+
+  private val flushCacheButton: UdashButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Flush cache")
+
+  flushCacheButton.listen {
+    case _ =>
+      presenter.flushCache()
+  }
+
+  private val showFetchButton =
     UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
 
   private val content = div(
@@ -144,8 +162,10 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
           UdashForm.inline(
             UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
-            submitButton.render,
-            collapseButton.render
+            fetchStoriesButton.render,
+            refreshTopStoriesButton.render,
+            flushCacheButton.render,
+            showFetchButton.render
           ).render,
         div(BSS.row,
           "Stories in cache ",
