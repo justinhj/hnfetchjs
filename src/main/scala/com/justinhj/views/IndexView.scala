@@ -1,45 +1,41 @@
 package com.justinhj.views
 
-import java.net.URI
-
 import cats.instances.list._
 import cats.syntax.traverse._
 import com.justinhj._
 import com.justinhj.hnfetch.HNFetch.{HNItem, HNItemID, HNItemIDList}
-import com.justinhj.hnfetch.{HNDataSources, HNFetch}
+import com.justinhj.hnfetch.{Cache, HNDataSources, HNFetch}
 import com.justinhj.styles._
 import fetch.implicits._
 import fetch.syntax._
-import fetch.{DataSourceCache, FetchEnv, InMemoryCache, _}
+import fetch.{DataSourceCache, FetchEnv, _}
 import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
-import io.udash.bootstrap.label.UdashLabel
-import io.udash.bootstrap.{UdashBootstrap, BootstrapStyles => BSS}
-import moment._
+import io.udash.bootstrap.{BootstrapStyles => BSS}
 import org.scalajs.dom
 import reftree.contrib.SimplifiedInstances._
 import reftree.diagram._
 import reftree.render._
 
 import scala.collection.immutable.{List, Seq}
-import scala.collection.mutable
-import scala.collection.parallel.immutable
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import scalacss.ScalatagsCss._
 
+// Define the data model for our page
 trait HNPageModel {
-  def startPage: Int
-  def storiesPerPage: Int
-  def topItemIDs: HNItemIDList
-  def currentItems : List[(Int, HNItem)]
-  def fetchRounds : List[Round]
-  def cacheSize : Int
-  def storyCount: Int
+  def startPage: Int // First page of stories to fetch and display (starts at 1)
+  def storiesPerPage: Int // Number of stories to fetch and dispaly per page
+  def topItemIDs: HNItemIDList // List of item IDs of top stories
+  def currentItems : List[(Int, HNItem)] // Fetched items and current rank
+  def fetchRounds : List[Round] // The Rounds from the last Fetch
+  def cacheSize : Int // size of the cache
+  def storyCount: Int // number of top stories
 }
 
+// ViewPresenter - responsible for creating the Presenter/View and Model
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
 
   override def create(): (View, Presenter[IndexState.type]) = {
@@ -52,29 +48,13 @@ case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
   }
 }
 
-// TEMP this can go to its own file CacheUtil
-
-final case class Cache(cache : Map[DataSourceIdentity, Any]) extends DataSourceCache {
-  override def get[A](k: DataSourceIdentity): Option[A] =
-    cache.get(k).asInstanceOf[Option[A]]
-
-  override def update[A](k: DataSourceIdentity, v: A): Cache =
-    Cache(cache.updated(k, v))
-
-  def size() = cache.size
-}
-
-object Cache {
-
-  def empty: Cache = Cache(Map.empty[DataSourceIdentity, Any])
-
-}
-
+// Presenter - responsible for the business logic, in this case managing fetching of data
+// via the Hacker News API
 class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[IndexState.type] {
 
   var cache : DataSourceCache = Cache.empty
 
-  // Get the latest top stories id's
+  // Get the latest top stories IDs
   def fetchTopItems() : Unit = {
 
     HNFetch.getTopItems().map {
@@ -98,13 +78,17 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     // helper to show the article rank
     def itemNum(n: Int) = ((startPage -1) * numItemsPerPage) + n + 1
 
-    // Get the items
+    // Get the items we will fetch for this particular page
     val pageOfItems = hnItemIDlist.slice((startPage-1) * numItemsPerPage, (startPage-1) * numItemsPerPage + numItemsPerPage)
 
+    // Turn them into Fetch jobs
     val fetchItems: Fetch[List[HNItem]] = pageOfItems.traverse(HNDataSources.getItem)
 
+    // Run the fetch
     val fetchResult: Future[(FetchEnv, List[HNItem])] = fetchItems.runF[Future](cache)
 
+    // Update our model based on the result
+    // The changes to the model will be automatically updated on the page thanks to Udash
     fetchResult.foreach {
       case (env, items) =>
 
@@ -125,7 +109,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
     }
   }
 
-  // Called before view starts rendering.
+  // Called before view starts rendering, initialize things
   override def handleState(state: IndexState.type): Unit = {
 
     model.subProp(_.startPage).set(1)
@@ -141,33 +125,9 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
   }
 }
 
-
+// FinalView - how to render the page
 class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) extends FinalView {
   import scalatags.JsDom.all._
-
-  // Let's display the time like "2 minutes ago" using moment.js
-  // ts is epoch time in seconds
-  def timestampToPretty(ts: Int) : String = {
-
-    val epochTimeMS = ts * 1000L
-
-    Moment(epochTimeMS).fromNow()
-
-  }
-
-  // We will display just the hostname of the URL
-  // this returns close to what we want but not exactly...
-  def getHostName(url: String) : String = {
-    if(url.isEmpty) ""
-    else {
-      Try(new URI(url)) match {
-        case Success(uri) =>
-          "(" + uri.getHost + ")"
-        case Failure(_) =>
-          "[parse error]"
-      }
-    }
-  }
 
   private val submitButton: UdashButton = UdashButton(ButtonStyle.Default)(`type` := "button", "Fetch Stories")
 
@@ -244,15 +204,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
   }
 
-
-//  def combinedProp = model.subProp(_.topItemIDs).combine(model.subProp(_.storiesPerPage)){
-//    (topItems, storiesPerPage) =>
-//      s"hello ${topItems.size} + ${storiesPerPage}"
-//  }
-
-//  private def topStoriesCount : ReadableProperty[String] =
-//    model.subProp(_.topItemIDs).transform((topStories: List[HNFetch.HNItemID]) => topStories.size.toString)
-
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
@@ -286,7 +237,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
               items => items.map {
                 case (index, item) =>
 
-                val hostName = s"${getHostName(item.url)}"
+                val hostName = s"${Util.getHostName(item.url)}"
 
                 li(GlobalStyles.itemListItem,
                   span(
@@ -315,7 +266,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
                       item.by
                     ),
                     a(" "),
-                    s"${timestampToPretty(item.time)}",
+                    s"${Util.timestampToPretty(item.time)}",
                     a(" "),
                     a(GlobalStyles.smallGrey,
                       href := s"https://news.ycombinator.com/item?id=${item.id}",
