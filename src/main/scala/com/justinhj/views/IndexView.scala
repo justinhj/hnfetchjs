@@ -10,11 +10,12 @@ import com.justinhj.hnfetch.{HNDataSources, HNFetch}
 import com.justinhj.styles._
 import fetch.implicits._
 import fetch.syntax._
-import fetch.{DataSourceCache, FetchEnv, _}
+import fetch.{DataSourceCache, FetchEnv, InMemoryCache, _}
 import io.udash._
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
-import io.udash.bootstrap.{BootstrapStyles => BSS}
+import io.udash.bootstrap.label.UdashLabel
+import io.udash.bootstrap.{UdashBootstrap, BootstrapStyles => BSS}
 import moment._
 import org.scalajs.dom
 import reftree.contrib.SimplifiedInstances._
@@ -22,6 +23,8 @@ import reftree.diagram._
 import reftree.render._
 
 import scala.collection.immutable.{List, Seq}
+import scala.collection.mutable
+import scala.collection.parallel.immutable
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success, Try}
@@ -33,6 +36,7 @@ trait HNPageModel {
   def topItemIDs: HNItemIDList
   def currentItems : List[(Int, HNItem)]
   def fetchRounds : List[Round]
+  def itemCache : Cache
 }
 
 case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
@@ -45,6 +49,24 @@ case object IndexViewPresenter extends ViewPresenter[IndexState.type] {
 
     (view, presenter)
   }
+}
+
+// TEMP this can go to its own file CacheUtil
+
+final case class Cache(cache : Map[DataSourceIdentity, Any]) extends DataSourceCache {
+  override def get[A](k: DataSourceIdentity): Option[A] =
+    cache.get(k).asInstanceOf[Option[A]]
+
+  override def update[A](k: DataSourceIdentity, v: A): Cache =
+    Cache(cache.updated(k, v))
+
+  def size() = cache.size
+}
+
+object Cache {
+
+  def empty: Cache = Cache(Map.empty[DataSourceIdentity, Any])
+
 }
 
 class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[IndexState.type] {
@@ -66,27 +88,25 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
   // fetch a page of stories based on current page number and stories per page
   def fetchPageOfStories(): Unit = {
 
-    val startPage = Try(model.subProp(_.startPage).get).getOrElse(0)
+    val startPage = Try(model.subProp(_.startPage).get).getOrElse(1)
     val numItemsPerPage = Try(model.subProp(_.storiesPerPage).get).getOrElse(10)
     val hnItemIDlist = Try(model.subProp(_.topItemIDs).get).getOrElse(List.empty[HNItemID])
 
     // helper to show the article rank
-    def itemNum(n: Int) = (startPage * numItemsPerPage) + n + 1
+    def itemNum(n: Int) = ((startPage -1) * numItemsPerPage) + n + 1
 
     // Get the items
-    val pageOfItems = hnItemIDlist.slice(startPage * numItemsPerPage, startPage * numItemsPerPage + numItemsPerPage)
+    val pageOfItems = hnItemIDlist.slice((startPage-1) * numItemsPerPage, (startPage-1) * numItemsPerPage + numItemsPerPage)
 
     val fetchItems: Fetch[List[HNItem]] = pageOfItems.traverse(HNDataSources.getItem)
 
-    val fetchResult: Future[(FetchEnv, List[HNItem])] =
-      if(cache.isDefined) fetchItems.runF[Future](cache.get)
-      else fetchItems.runF[Future]
+    val fetchResult: Future[(FetchEnv, List[HNItem])] = fetchItems.runF[Future](model.subProp(_.itemCache).get)
 
     fetchResult.foreach {
       case (env, items) =>
 
         // Update the cache
-        cache = Some(env.cache)
+        model.subProp(_.itemCache).set(env.cache)
 
         // save the items as a tuple of item number and item
 
@@ -104,8 +124,8 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
   // Called before view starts rendering.
   override def handleState(state: IndexState.type): Unit = {
 
-    model.subProp(_.startPage).set(0)
-    model.subProp(_.storiesPerPage).set(20)
+    model.subProp(_.startPage).set(1)
+    model.subProp(_.storiesPerPage).set(30)
 
       // TODO this should be called periodically and store in the model
     fetchTopItems()
@@ -215,18 +235,27 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
     Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
   }
 
+
+//  def combinedProp = model.subProp(_.topItemIDs).combine(model.subProp(_.storiesPerPage)){
+//    (topItems, storiesPerPage) =>
+//      s"hello ${topItems.size} + ${storiesPerPage}"
+//  }
+
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo")),
       div(BSS.row, GlobalStyles.controlPanel,
           UdashForm.inline(
-            UdashForm.numberInput()("Start Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt)),
+            UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
+//            produce(model.subProp(_.storiesPerPage).combine(model.subProp(_.topItemIDs))) {
+//              whatAmI =>
+//                //val itemsPerPage = model.subProp(_.storiesPerPage).get
+//                //span(s" of ${ti.si / itemsPerPage} pages ").render
+//                div("heello")
+//            },
+  //
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
-            UdashForm.numberInput()("Stories in cache")(model.subProp(_.fetchRounds).transform {
-              what: List[Round] =>
-                "Hello"
-            }),
             submitButton.render,
             collapseButton.render
           ).render,

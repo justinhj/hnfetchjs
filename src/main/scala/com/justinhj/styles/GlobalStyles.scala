@@ -23,6 +23,10 @@ object GlobalStyles extends StyleSheet.Inline {
   import Colors._
   import Font._
 
+  val input = style {
+    width(30 px)
+  }
+
   val controlPanel = style {
     backgroundColor(hnGrey)
   }
