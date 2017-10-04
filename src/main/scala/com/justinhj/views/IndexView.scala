@@ -4,7 +4,7 @@ import cats.instances.list._
 import cats.syntax.traverse._
 import com.justinhj._
 import com.justinhj.hnfetch.HNFetch.{HNItem, HNItemID, HNItemIDList}
-import com.justinhj.hnfetch.{Cache, HNDataSources, HNFetch}
+import com.justinhj.hnfetch.{Cache, HNDataSources, HNFetch, HNRefTree}
 import com.justinhj.styles._
 import fetch.implicits._
 import fetch.syntax._
@@ -139,71 +139,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
   private val collapseButton =
     UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
 
-  import reftree.core._
-
-  case class FetchInfo(count: Int, dsName: String)
-
-  // Figure out the DataSource type and number of items fetched
-  def getRoundCountAndDSName(round: Round) : List[FetchInfo] = {
-
-    val optionList = round.request match {
-
-      case Concurrent(queries) =>
-
-        queries.map  {
-
-          case FetchMany(items, dsType) =>
-            Some(FetchInfo(items.toList.size, dsType.toString))
-          case FetchOne(item, dsType) =>
-            Some(FetchInfo(1, dsType.toString))
-          case _ =>
-            None
-
-        }.toList
-
-      case _ => List(None)
-    }
-
-    optionList.flatten
-
-  }
-
-  implicit def fetchInfoToRefTree: ToRefTree[FetchInfo] = ToRefTree[FetchInfo] {
-    fetchInfo =>
-      RefTree.Ref(fetchInfo, Seq(
-        RefTree.Val(fetchInfo.count).toField.withName("count"),
-        fetchInfo.dsName.refTree.toField.withName("datasource")
-
-      ))
-
-  }
-
-  implicit def roundToRefTree: ToRefTree[Round] = ToRefTree[Round] {
-    round =>
-      val fetchInfos : List[FetchInfo] = getRoundCountAndDSName(round)
-
-      RefTree.Ref(round, Seq(
-        RefTree.Val((round.end - round.start) / 1000000).toField.withName("ms"),
-        fetchInfos.refTree.toField.withName("Fetches")
-      ))
-
-  }
-
-
-  val renderer = Renderer(
-    renderingOptions = RenderingOptions(density = 75)
-  )
-
-  import renderer._
-  
-  // Redraw the fetch data structure diagram
-  private def renderDiagram(): Unit = {
-
-    val lastFetch = model.subProp(_.fetchRounds).get
-
-    Diagram.sourceCodeCaption(lastFetch).render(dom.document.getElementById("reftree"))
-  }
-
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
@@ -227,7 +162,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
         div(BSS.row, GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
-            renderDiagram
+            HNRefTree.renderDiagram("reftree", r)
             div().render
           },
           div(id := "reftree", `class` := "collapse"))),
