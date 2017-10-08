@@ -1,0 +1,6 @@
+-J-Xms1200m
+-J-Xmx4G
+-J-XX:+UseConcMarkSweepGC
+-J-XX:+CMSClassUnloadingEnabled
+
+
