@@ -150,12 +150,11 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       presenter.flushCache()
   }
 
-//  private val showFetchButton =
-//    UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
-
   private val content = div(
     div(BSS.container,
       div(GlobalStyles.titleBar, BSS.row,
+        a(href := "https://github.com/justinhj/hnfetchjs",
+          img(src := "assets/images/GitHub-Mark-32px.png")),
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
         span(GlobalStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
         span(GlobalStyles.titleBarTextSmall, " Number of top stories : "),
@@ -167,7 +166,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
             fetchStoriesButton.render,
             refreshTopStoriesButton.render,
             flushCacheButton.render
-            //showFetchButton.render
           ).render),
       ul(`class` := "nav nav-pills",
         li(role := "presentation", `class` := "active",

@@ -10,6 +10,7 @@ object GlobalStyles extends StyleSheet.Inline {
   object Colors {
     val hnGrey = c"#f6f6ef"
     val hnGreyDark = c"#828282"
+    val hnGreyDarker = c"#424242"
     val hnOrange = c"#ff6600"
   }
 
@@ -52,7 +53,7 @@ object GlobalStyles extends StyleSheet.Inline {
 
   val titleBarTextSmall = style(
     fontSize(smallScale em),
-    color.darkblue,
+    color(hnGreyDarker),
     fontWeight.normal,
     fontFamily :=! fonts
   )
