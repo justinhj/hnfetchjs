@@ -150,8 +150,8 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       presenter.flushCache()
   }
 
-  private val showFetchButton =
-    UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
+//  private val showFetchButton =
+//    UdashButton(ButtonStyle.Default)(`type` := "button", attr("data-toggle") := "collapse", attr("data-target") := "#reftree", "Show Fetch")
 
   private val content = div(
     div(BSS.container,
@@ -159,71 +159,81 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
         span(GlobalStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
         span(GlobalStyles.titleBarTextSmall, " Number of top stories : "),
-        span(GlobalStyles.titleBarTextSmall, (bind(model.subProp(_.storyCount))))),
+        span(GlobalStyles.titleBarTextSmall, bind(model.subProp(_.storyCount)))),
       div(BSS.row, GlobalStyles.controlPanel,
           UdashForm.inline(
             UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
             fetchStoriesButton.render,
             refreshTopStoriesButton.render,
-            flushCacheButton.render,
-            showFetchButton.render
-          ).render,
-        div(BSS.row, GlobalStyles.reftreePanel,
+            flushCacheButton.render
+            //showFetchButton.render
+          ).render),
+      ul(`class` := "nav nav-pills",
+        li(`class` := "active",
+          a(href := "#itemlist", attr("data-toggle") := "tab", "Stories")),
+        li(
+          a(href := "#reftree", attr("data-toggle") := "tab", "Last Fetch"))
+      ),
+      div(`class` := "tab-content clearfix",
+
+        div(BSS.row, `class` := "tab-pane", GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
             HNRefTree.renderDiagram("reftree", r)
             div().render
           },
-          div(id := "reftree", `class` := "collapse"))),
-      div(BSS.row,
-          ul(GlobalStyles.itemList,
-            produce(model.subProp(_.currentItems)) {
-              items => items.map {
-                case (index, item) =>
+          div(id := "reftree")),
 
-                val hostName = s"${Util.getHostName(item.url)}"
+        div(BSS.row, `class` := "tab-pane active", id := "itemlist",
+            ul(GlobalStyles.itemList,
+              produce(model.subProp(_.currentItems)) {
+                items => items.map {
+                  case (index, item) =>
 
-                li(GlobalStyles.itemListItem,
-                  span(
-                    GlobalStyles.bigGrey,
-                    s"$index."
-                  ),
-                  a(" "),
-                  a(
-                    GlobalStyles.bigBlack,
-                    href := item.url,
-                    item.title
-                  ),
-                  a(" "),
-                  a(
-                    GlobalStyles.smallGrey,
-                    href := s"https://news.ycombinator.com/from?site=$hostName",
-                    hostName
-                  ),
-                  a(" "),
-                  br,
-                  div(GlobalStyles.smallGrey,
-                    s"${item.score} points by",
-                    a(" "),
-                    a(GlobalStyles.smallGrey,
-                      href := s"https://news.ycombinator.com/user?id=${item.by}",
-                      item.by
+                  val hostName = s"${Util.getHostName(item.url)}"
+
+                  li(GlobalStyles.itemListItem,
+                    span(
+                      GlobalStyles.bigGrey,
+                      s"$index."
                     ),
                     a(" "),
-                    s"${Util.timestampToPretty(item.time)}",
+                    a(
+                      GlobalStyles.bigBlack,
+                      href := item.url,
+                      item.title
+                    ),
                     a(" "),
-                    a(GlobalStyles.smallGrey,
-                      href := s"https://news.ycombinator.com/item?id=${item.id}",
-                      s"${item.descendants} comments")
-                  )
-                ).render
+                    a(
+                      GlobalStyles.smallGrey,
+                      href := s"https://news.ycombinator.com/from?site=$hostName",
+                      hostName
+                    ),
+                    a(" "),
+                    br,
+                    div(GlobalStyles.smallGrey,
+                      s"${item.score} points by",
+                      a(" "),
+                      a(GlobalStyles.smallGrey,
+                        href := s"https://news.ycombinator.com/user?id=${item.by}",
+                        item.by
+                      ),
+                      a(" "),
+                      s"${Util.timestampToPretty(item.time)}",
+                      a(" "),
+                      a(GlobalStyles.smallGrey,
+                        href := s"https://news.ycombinator.com/item?id=${item.id}",
+                        s"${item.descendants} comments")
+                    )
+                  ).render
+                }
               }
-            }
-          )
-        ).render
-      )
+            )
+          ).render
+        )
     )
+  )
 
   override def getTemplate: Modifier = content
 
