@@ -170,22 +170,21 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
             //showFetchButton.render
           ).render),
       ul(`class` := "nav nav-pills",
-        li(`class` := "active",
+        li(role := "presentation", `class` := "active",
           a(href := "#itemlist", attr("data-toggle") := "tab", "Stories")),
         li(
-          a(href := "#reftree", attr("data-toggle") := "tab", "Last Fetch"))
+          a(role := "presentation", href := "#reftree", attr("data-toggle") := "tab", "Last Fetch"))
       ),
       div(`class` := "tab-content clearfix",
 
-        div(BSS.row, `class` := "tab-pane", GlobalStyles.reftreePanel,
+        div(BSS.row, id := "reftree", role := "tabpanel", `class` := "tab-pane", GlobalStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
             HNRefTree.renderDiagram("reftree", r)
             div().render
-          },
-          div(id := "reftree")),
+          }),
 
-        div(BSS.row, `class` := "tab-pane active", id := "itemlist",
+        div(BSS.row, role := "tabpanel", `class` := "tab-pane active", id := "itemlist",
             ul(GlobalStyles.itemList,
               produce(model.subProp(_.currentItems)) {
                 items => items.map {
