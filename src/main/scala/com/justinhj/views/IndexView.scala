@@ -52,6 +52,7 @@ class HNPagePresenter(model: ModelProperty[HNPageModel]) extends Presenter[Index
 
   def flushCache() : Unit = {
     cache = Cache.empty
+    model.subProp(_.cacheSize).set(0)
   }
 
   // Get the latest top stories IDs
@@ -157,7 +158,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       div(GlobalStyles.titleBar, BSS.row,
         span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
         span(GlobalStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
-        span(GlobalStyles.titleBarTextSmall, " number of top stories "),
+        span(GlobalStyles.titleBarTextSmall, " Number of top stories : "),
         span(GlobalStyles.titleBarTextSmall, (bind(model.subProp(_.storyCount))))),
       div(BSS.row, GlobalStyles.controlPanel,
           UdashForm.inline(
