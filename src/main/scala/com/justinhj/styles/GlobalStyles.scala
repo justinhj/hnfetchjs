@@ -4,7 +4,22 @@ import scala.language.postfixOps
 import scalacss.internal.{Attr, Compose, FontFace, Literal}
 import scalacss.DevDefaults._
 
-object GlobalStyles extends StyleSheet.Inline {
+object StandaloneStyles extends StyleSheet.Standalone {
+
+  import dsl._
+  import InlineStyles.Colors._
+
+  "#my-tabs>li.active>a" - (
+    color(hnGreyDarker)
+    )
+
+  "#my-tabs>li>a" - (
+      color(hnGreyDark)
+  )
+
+}
+
+object InlineStyles extends StyleSheet.Inline {
   import dsl._
 
   object Colors {
@@ -28,7 +43,7 @@ object GlobalStyles extends StyleSheet.Inline {
     width(30 px)
   }
 
-  val controlPanel = style {
+  val background = style {
     backgroundColor(hnGrey)
   }
 

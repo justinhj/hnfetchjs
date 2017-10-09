@@ -152,30 +152,30 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   private val content = div(
     div(BSS.container,
-      div(GlobalStyles.titleBar, BSS.row,
+      div(InlineStyles.titleBar, BSS.row,
         a(href := "https://github.com/justinhj/hnfetchjs",
           img(src := "assets/images/GitHub-Mark-32px.png")),
-        span(GlobalStyles.titleBarText, "Hacker News API Fetch JS Demo "),
-        span(GlobalStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
-        span(GlobalStyles.titleBarTextSmall, " Number of top stories : "),
-        span(GlobalStyles.titleBarTextSmall, bind(model.subProp(_.storyCount)))),
-      div(BSS.row, GlobalStyles.controlPanel,
+        span(InlineStyles.titleBarText, "Hacker News API Fetch JS Demo "),
+        span(InlineStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
+        span(InlineStyles.titleBarTextSmall, " Number of top stories : "),
+        span(InlineStyles.titleBarTextSmall, bind(model.subProp(_.storyCount)))),
+      div(BSS.row, InlineStyles.background,
           UdashForm.inline(
-            UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), GlobalStyles.input),
+            UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), InlineStyles.input),
             UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
             fetchStoriesButton.render,
             refreshTopStoriesButton.render,
             flushCacheButton.render
           ).render),
-      ul(`class` := "nav nav-pills",
+      ul(BSS.row, InlineStyles.background, id := "my-tabs", `class` := "nav nav-tabs",
         li(role := "presentation", `class` := "active",
           a(href := "#itemlist", attr("data-toggle") := "tab", "Stories")),
         li(
           a(role := "presentation", href := "#reftree", attr("data-toggle") := "tab", "Last Fetch"))
       ),
-      div(`class` := "tab-content clearfix",
+      div(BSS.row, `class` := "tab-content clearfix",
 
-        div(BSS.row, id := "reftree", role := "tabpanel", `class` := "tab-pane", GlobalStyles.reftreePanel,
+        div(BSS.row, id := "reftree", role := "tabpanel", `class` := "tab-pane", InlineStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
             HNRefTree.renderDiagram("reftree", r)
@@ -183,43 +183,43 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
           }),
 
         div(BSS.row, role := "tabpanel", `class` := "tab-pane active", id := "itemlist",
-            ul(GlobalStyles.itemList,
+            ul(InlineStyles.itemList,
               produce(model.subProp(_.currentItems)) {
                 items => items.map {
                   case (index, item) =>
 
                   val hostName = s"${Util.getHostName(item.url)}"
 
-                  li(GlobalStyles.itemListItem,
+                  li(InlineStyles.itemListItem,
                     span(
-                      GlobalStyles.bigGrey,
+                      InlineStyles.bigGrey,
                       s"$index."
                     ),
                     a(" "),
                     a(
-                      GlobalStyles.bigBlack,
+                      InlineStyles.bigBlack,
                       href := item.url,
                       item.title
                     ),
                     a(" "),
                     a(
-                      GlobalStyles.smallGrey,
+                      InlineStyles.smallGrey,
                       href := s"https://news.ycombinator.com/from?site=$hostName",
                       hostName
                     ),
                     a(" "),
                     br,
-                    div(GlobalStyles.smallGrey,
+                    div(InlineStyles.smallGrey,
                       s"${item.score} points by",
                       a(" "),
-                      a(GlobalStyles.smallGrey,
+                      a(InlineStyles.smallGrey,
                         href := s"https://news.ycombinator.com/user?id=${item.by}",
                         item.by
                       ),
                       a(" "),
                       s"${Util.timestampToPretty(item.time)}",
                       a(" "),
-                      a(GlobalStyles.smallGrey,
+                      a(InlineStyles.smallGrey,
                         href := s"https://news.ycombinator.com/item?id=${item.id}",
                         s"${item.descendants} comments")
                     )

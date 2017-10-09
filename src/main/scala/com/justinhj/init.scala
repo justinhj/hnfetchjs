@@ -1,5 +1,6 @@
 package com.justinhj
 
+import com.justinhj.styles._
 import io.udash._
 import io.udash.wrappers.jquery._
 import org.scalajs.dom.{Element, document}
@@ -30,8 +31,11 @@ object Init extends JSApp with StrictLogging {
         import scalacss.DevDefaults._
         import scalacss.ScalatagsCss._
         import scalatags.JsDom._
-        import com.justinhj.styles.GlobalStyles
-        jQ(GlobalStyles.render[TypedTag[org.scalajs.dom.raw.HTMLStyleElement]].render).insertBefore(appRoot.get)
+
+        jQ(InlineStyles.render[TypedTag[org.scalajs.dom.raw.HTMLStyleElement]].render).insertBefore(appRoot.get)
+
+        jQ(StandaloneStyles.render[TypedTag[org.scalajs.dom.raw.HTMLStyleElement]].render).insertBefore(appRoot.get)
+
 
       }
     })
