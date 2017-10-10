@@ -63,7 +63,14 @@ object InlineStyles extends StyleSheet.Inline {
     fontSize(bigScale em),
     color.black,
     fontWeight.bold,
-    fontFamily :=! fonts
+    fontFamily :=! fonts,
+    paddingLeft(5 px),
+    paddingRight(5 px)
+  )
+
+  val label = style (
+    paddingLeft(6 px),
+    paddingRight(6 px)
   )
 
   val titleBarTextSmall = style(

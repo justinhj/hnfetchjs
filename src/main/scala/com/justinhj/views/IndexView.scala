@@ -151,6 +151,8 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       presenter.flushCache()
   }
 
+  val test = 9223372036854775807L
+
   val tabContent = BootstrapClass("tab-content")
   val tabPane = BootstrapClass("tab-pane")
   val clearFix = BootstrapClass("clearfix")
@@ -160,14 +162,14 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       div(InlineStyles.titleBar, BSS.row,
         a(href := "https://github.com/justinhj/hnfetchjs",
           img(src := "assets/images/GitHub-Mark-32px.png")),
-        span(InlineStyles.titleBarText, "Hacker News API Fetch JS Demo "),
+        a(InlineStyles.titleBarText, href := "https://github.com/justinhj/hnfetchjs", "clone hnfetchjs on github"),
         span(InlineStyles.titleBarTextSmall, "Cached items : ", bind(model.subProp(_.cacheSize))),
         span(InlineStyles.titleBarTextSmall, " Number of top stories : "),
         span(InlineStyles.titleBarTextSmall, bind(model.subProp(_.storyCount)))),
       div(BSS.row, InlineStyles.background,
           UdashForm.inline(
-            UdashForm.numberInput()("Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), InlineStyles.input),
-            UdashForm.numberInput()("Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
+            UdashForm.numberInput()(InlineStyles.label, "Page")(model.subProp(_.startPage).transform(_.toString, Integer.parseInt), InlineStyles.input),
+            UdashForm.numberInput()(InlineStyles.label, "Stories per page")(model.subProp(_.storiesPerPage).transform(_.toString, Integer.parseInt)),
             fetchStoriesButton.render,
             refreshTopStoriesButton.render,
             flushCacheButton.render
