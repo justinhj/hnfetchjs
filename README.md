@@ -26,8 +26,10 @@ This project is not
 
 After cloning the repository and installing sbt you can build the frontend files and serve them from a local server using
 
-```sbt
-~fastOptJS```
+```
+sbt
+~fastOptJS
+```
 
 You can now edit the Scala files to make changes and view the site at [http://localhost:12345/target/UdashStatic/WebContent/index.html](http://localhost:12345/target/UdashStatic/WebContent/index.html)
 
@@ -35,7 +37,8 @@ To publish the final pages
 
 ```sbt
 set isSnapshot := false
-compileStatics```
+compileStatics
+```
 
 The final output files will be located in the folder `hnfetchjs/target/UdashStatic/WebContent/`
 
