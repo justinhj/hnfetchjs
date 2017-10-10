@@ -10,6 +10,7 @@ import fetch.implicits._
 import fetch.syntax._
 import fetch.{DataSourceCache, FetchEnv, _}
 import io.udash._
+import io.udash.bootstrap.BootstrapStyles.BootstrapClass
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
 import io.udash.bootstrap.{BootstrapStyles => BSS}
@@ -150,6 +151,10 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
       presenter.flushCache()
   }
 
+  val tabContent = BootstrapClass("tab-content")
+  val tabPane = BootstrapClass("tab-pane")
+  val clearFix = BootstrapClass("clearfix")
+
   private val content = div(
     div(BSS.container,
       div(InlineStyles.titleBar, BSS.row,
@@ -167,22 +172,22 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
             refreshTopStoriesButton.render,
             flushCacheButton.render
           ).render),
-      ul(BSS.row, InlineStyles.background, id := "my-tabs", `class` := "nav nav-tabs",
-        li(role := "presentation", `class` := "active",
+      ul(BSS.row, BSS.Navigation.nav, BSS.Navigation.navTabs, InlineStyles.background, id := "my-tabs",
+        li(role := "presentation", BSS.active,
           a(href := "#itemlist", attr("data-toggle") := "tab", "Stories")),
         li(
           a(role := "presentation", href := "#reftree", attr("data-toggle") := "tab", "Last Fetch"))
       ),
-      div(BSS.row, `class` := "tab-content clearfix",
+      div(BSS.row, tabContent, clearFix,
 
-        div(BSS.row, id := "reftree", role := "tabpanel", `class` := "tab-pane", InlineStyles.reftreePanel,
+        div(tabPane, id := "reftree", role := "tabpanel", InlineStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
             // Redraw the fetch queue diagram
             HNRefTree.renderDiagram("reftree", r)
             div().render
           }),
 
-        div(BSS.row, role := "tabpanel", `class` := "tab-pane active", id := "itemlist",
+        div(tabPane, BSS.active, role := "tabpanel", id := "itemlist",
             ul(InlineStyles.itemList,
               produce(model.subProp(_.currentItems)) {
                 items => items.map {
