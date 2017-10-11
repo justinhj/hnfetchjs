@@ -11,6 +11,9 @@ This is a project to demo several libraries at once:
 View the project live
 - [http://heyes-jones.com/hnfetch/index.html](http://heyes-jones.com/hnfetch/index.html) 
 
+Or watch a video
+- [https://youtu.be/0jHG8Y3hiog](https://youtu.be/0jHG8Y3hiog)
+
 Fetch is a Scala library inspired by [Haxl](https://github.com/facebook/haxl) which makes it easier to work with data sources that have latency (DB's, web services etc). In this example I use the Hacker News API as a data source. Once a Fetch is executed `Fetch Stories` you can click the `Last Fetch` tab to view a visualization of the Fetch operation. This shows a list of "rounds", how long they took and how many items were fetched. If you try to get the same stories again you will see that the Fetch diagram is simply Nil, because the items were already cached. You can clear the cache and run the fetch again.
 
 Goals of this project
