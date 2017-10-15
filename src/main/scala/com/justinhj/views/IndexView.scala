@@ -155,7 +155,6 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   val tabContent = BootstrapClass("tab-content")
   val tabPane = BootstrapClass("tab-pane")
-  val clearFix = BootstrapClass("clearfix")
 
   private val content = div(
     div(BSS.container,
@@ -180,7 +179,7 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
         li(
           a(role := "presentation", href := "#reftree", attr("data-toggle") := "tab", "Last Fetch"))
       ),
-      div(BSS.row, tabContent, clearFix,
+      div(BSS.row, tabContent, BSS.Visibility.clearfix,
 
         div(tabPane, id := "reftree", role := "tabpanel", InlineStyles.reftreePanel,
           produce(model.subProp(_.fetchRounds)) { r =>
