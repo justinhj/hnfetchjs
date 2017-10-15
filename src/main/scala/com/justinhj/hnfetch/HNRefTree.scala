@@ -4,16 +4,14 @@ import fetch.{Concurrent, FetchMany, FetchOne, Round}
 import org.scalajs.dom
 import reftree.diagram.Diagram
 import reftree.render.{Renderer, RenderingOptions}
+import reftree.core._
+import reftree.contrib.SimplifiedInstances.{string, list}
 
 import scala.collection.immutable.{List, Seq}
 
 // Utilities for drawing a reftree of Fetch rounds
 
 object HNRefTree {
-
-  import reftree.core._
-
-  // Conversion implicits to convert from Fetch data to a RefTree we can render
 
   implicit def fetchInfoToRefTree: ToRefTree[FetchInfo] = ToRefTree[FetchInfo] {
     fetchInfo =>
@@ -44,7 +42,7 @@ object HNRefTree {
 
   // Redraw the fetch data structure diagram
   def renderDiagram(elementID : String, rounds: List[Round]): Unit = {
-
+    
     Diagram.sourceCodeCaption(rounds).render(dom.document.getElementById(elementID))
   }
 
