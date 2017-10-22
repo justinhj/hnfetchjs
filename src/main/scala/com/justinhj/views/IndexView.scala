@@ -10,10 +10,10 @@ import fetch.implicits._
 import fetch.syntax._
 import fetch.{DataSourceCache, FetchEnv, _}
 import io.udash._
-import io.udash.bootstrap.BootstrapStyles.BootstrapClass
 import io.udash.bootstrap.button.{ButtonStyle, UdashButton}
 import io.udash.bootstrap.form._
 import io.udash.bootstrap.{BootstrapStyles => BSS}
+import io.udash.css.CssStyleName
 
 import scala.collection.immutable.List
 import scala.concurrent.Future
@@ -153,8 +153,10 @@ class HNPageView(model: ModelProperty[HNPageModel], presenter: HNPagePresenter) 
 
   val test = 9223372036854775807L
 
-  val tabContent = BootstrapClass("tab-content")
-  val tabPane = BootstrapClass("tab-pane")
+  val tabContent = CssStyleName("tab-content")
+  val tabPane = CssStyleName("tab-pane")
+
+  import io.udash.css.CSSView.
 
   private val content = div(
     div(BSS.container,

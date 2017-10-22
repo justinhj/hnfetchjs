@@ -2,6 +2,7 @@ package com.justinhj
 
 import com.justinhj.styles._
 import io.udash._
+import io.udash.routing.WindowUrlChangeProvider
 import io.udash.wrappers.jquery._
 import org.scalajs.dom.{Element, document}
 
@@ -13,7 +14,7 @@ object Context {
   private val routingRegistry = new RoutingRegistryDef
   private val viewPresenterRegistry = new StatesToViewPresenterDef
 
-  implicit val applicationInstance = new Application[RoutingState](routingRegistry, viewPresenterRegistry, RootState)
+  implicit val applicationInstance = new Application[RoutingState](routingRegistry, viewPresenterRegistry, WindowUrlChangeProvider)
 }
 
 object Init extends JSApp with StrictLogging {
